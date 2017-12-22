@@ -13,8 +13,9 @@ import Regex
 class ViewController: NSViewController {
     static let CDNBase = "https://i.4cdn.org/"
     private var total: Int = 0
-    private var subfolder: String = ""
+    private var subFolder: String = ""
     private var threadURL: String = ""
+    private var tasks: Int = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,7 +42,7 @@ class ViewController: NSViewController {
 
     @IBAction func getThread(_ sender: NSTextField) {
         self.threadURL = sender.stringValue
-        self.subfolder = self.subfolderField.stringValue
+        self.subFolder = self.subfolderField.stringValue
 
         if threadURL == "" {
             return
@@ -53,7 +54,7 @@ class ViewController: NSViewController {
         let regex = Regex("4chan\\.org\\/([a-z0-9]{1,})")
         guard let boardName = regex.firstMatch(in: threadURL)?.captures.first else {
             print("cannot get board name from url")
-            reactivateUIElements()
+            self.reactivateUIElements()
             return
         }
 
@@ -82,11 +83,16 @@ class ViewController: NSViewController {
                 DispatchQueue.main.async {
                     self.progress.maxValue = Double(media.count)
                 }
+                self.tasks = media.count
+                debugPrint(self.tasks)
                 for i in 0..<media.count {
                     var item = media[i].absoluteString
                     item.replaceSubrange(item.startIndex..<item.index(item.startIndex, offsetBy: 22), with: "")
                     self.downloadPicture(url: media[i], dest: item, itemNum: i, maxItems: media.count - 1)
                 }
+                while self.tasks > 0 {}
+                self.reactivateUIElements()
+                self.showNotification()
             } catch {
                 debugPrint("something broke")
                 self.reactivateUIElements()
@@ -95,20 +101,12 @@ class ViewController: NSViewController {
         task.resume()
     }
 
-    func disableUIElements() {
-        DispatchQueue.main.async {
-            self.downloadBtn.isEnabled = false
-            self.textField.isEnabled = false
-            self.subfolderField.isEnabled = false
-        }
-    }
-
-    func reactivateUIElements() {
-        DispatchQueue.main.async {
-            self.textField.isEnabled = true
-            self.subfolderField.isEnabled = true
-            self.downloadBtn.isEnabled = true
-        }
+    func showNotification() -> Void {
+        let notification = NSUserNotification()
+        notification.title = "Download complete!"
+        notification.informativeText = "Check your Documents folder for the files"
+        notification.soundName = NSUserNotificationDefaultSoundName
+        NSUserNotificationCenter.default.deliver(notification)
     }
 
     func buildMediaArray(json: JSON, boardName: String?) -> [URL] {
@@ -149,12 +147,13 @@ class ViewController: NSViewController {
         // Create the URL request
         let urlReq = URLRequest(url: url)
         // Perform the task
-        let task = session.downloadTask(with: urlReq) {
-            (tempLocalUrl, response, error) in
+        let task = session.downloadTask(with: urlReq) { (tempLocalUrl, response, error) in
             if let temp = tempLocalUrl, error == nil {
                 // Success
                 if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                    print("Successfully downloaded. Status code: \(statusCode)")
+                    if statusCode != 200 {
+                        debugPrint("cannot download the item")
+                    }
                 }
                 do {
                     let filename = dest as NSString
@@ -163,8 +162,8 @@ class ViewController: NSViewController {
                     let ext = filename.pathExtension
 
                     // create the folder name by reading the extension
-                    if self.subfolder != "" {
-                        dir = dir.appendingPathComponent(self.subfolder)
+                    if self.subFolder != "" {
+                        dir = dir.appendingPathComponent(self.subFolder)
                     }
                     try FileManager.default.createDirectory(at: dir.appendingPathComponent(ext), withIntermediateDirectories: true, attributes: nil)
 
@@ -180,6 +179,9 @@ class ViewController: NSViewController {
                         self.progress.increment(by: 1)
                     }
 
+                    self.tasks = self.tasks - 1
+                    debugPrint(self.tasks)
+
                 } catch (let writeError) {
                     print("Error creating a file: \(writeError)")
                 }
@@ -188,10 +190,6 @@ class ViewController: NSViewController {
             }
         }
         task.resume()
-        self.progress.
-        if itemNum == maxItems {
-            reactivateUIElements()
-        }
     }
 
     // createDestinationFolder handles creating the base n4t folder in the documents
@@ -199,8 +197,8 @@ class ViewController: NSViewController {
     private func createDestinationFolder(dir: URL) -> Bool {
         do {
             var dest = dir.appendingPathComponent("n4t")
-            if self.subfolder != "" {
-                dest = dest.appendingPathComponent(self.subfolder)
+            if self.subFolder != "" {
+                dest = dest.appendingPathComponent(self.subFolder)
             }
             try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true, attributes: nil)
             return true
@@ -209,5 +207,25 @@ class ViewController: NSViewController {
             return false
         }
     }
+
+    func disableUIElements() {
+        DispatchQueue.main.async {
+            self.downloadBtn.isEnabled = false
+            self.textField.isEnabled = false
+            self.subfolderField.isEnabled = false
+        }
+    }
+
+    func reactivateUIElements() {
+        print("well yes, it was called indeed")
+        DispatchQueue.main.async {
+            self.textField.isEnabled = true
+            self.subfolderField.isEnabled = true
+            self.downloadBtn.isEnabled = true
+            self.progress.doubleValue = 0.0
+            print("and it got down to here too!")
+        }
+    }
+
 }
 
