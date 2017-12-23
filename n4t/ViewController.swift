@@ -35,6 +35,7 @@ class ViewController: NSViewController {
     @IBOutlet var textField: NSTextField!
     @IBOutlet var subfolderField: NSTextField!
     @IBOutlet var downloadBtn: NSButton!
+    @IBOutlet var label: NSTextField!
 
     @IBAction func downloadBtnPress(_ sender: NSButton) {
         self.getThread(textField)      // perform the download
@@ -80,17 +81,26 @@ class ViewController: NSViewController {
                 let media = self.buildMediaArray(json: json, boardName: boardName)
                 self.total = media.count
 
+                if self.folderExists(name: self.subFolder) {
+                    print("already exists")
+                    DispatchQueue.main.async {
+                        self.label.stringValue = "Error: Folder already exists"
+                        self.reactivateUIElements()
+                    }
+                    return
+                }
+
                 DispatchQueue.main.async {
                     self.progress.maxValue = Double(media.count)
                 }
                 self.tasks = media.count
-                debugPrint(self.tasks)
                 for i in 0..<media.count {
                     var item = media[i].absoluteString
                     item.replaceSubrange(item.startIndex..<item.index(item.startIndex, offsetBy: 22), with: "")
                     self.downloadPicture(url: media[i], dest: item, itemNum: i, maxItems: media.count - 1)
                 }
-                while self.tasks > 0 {}
+                while self.tasks > 0 {
+                }
                 self.reactivateUIElements()
                 self.showNotification()
             } catch {
@@ -184,6 +194,8 @@ class ViewController: NSViewController {
 
                 } catch (let writeError) {
                     print("Error creating a file: \(writeError)")
+                    self.label.stringValue = "Error: file already exists"
+                    return
                 }
             } else {
                 print("Error took place while downloading a file. Error description: %@", error?.localizedDescription ?? "stuff is borked");
@@ -208,6 +220,14 @@ class ViewController: NSViewController {
         }
     }
 
+    func folderExists(name: String) -> Bool {
+        let fm = FileManager.default
+        var base = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        base = base.appendingPathComponent("n4t")
+        base = base.appendingPathComponent(name)
+        return fm.fileExists(atPath: base.path)
+    }
+
     func disableUIElements() {
         DispatchQueue.main.async {
             self.downloadBtn.isEnabled = false
@@ -217,13 +237,11 @@ class ViewController: NSViewController {
     }
 
     func reactivateUIElements() {
-        print("well yes, it was called indeed")
         DispatchQueue.main.async {
             self.textField.isEnabled = true
             self.subfolderField.isEnabled = true
             self.downloadBtn.isEnabled = true
             self.progress.doubleValue = 0.0
-            print("and it got down to here too!")
         }
     }
 
