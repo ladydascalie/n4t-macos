@@ -11,6 +11,7 @@ import SwiftyJSON
 import Regex
 
 class ViewController: NSViewController {
+    static let BaseFolder = "n4t"
     static let CDNBase = "https://i.4cdn.org/"
     private var total: Int = 0
     private var subFolder: String = ""
@@ -19,10 +20,7 @@ class ViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         // Do any additional setup after loading the view.
-        let nc = NotificationCenter.default
-        nc.post(name: Notification.Name("Download Complete!"), object: nil)
     }
 
     override var representedObject: Any? {
@@ -35,7 +33,11 @@ class ViewController: NSViewController {
     @IBOutlet var textField: NSTextField!
     @IBOutlet var subfolderField: NSTextField!
     @IBOutlet var downloadBtn: NSButton!
-    @IBOutlet var label: NSTextField!
+
+    @IBAction func openBtnPress(_ sender: NSButton) {
+        if !self.openFolder() {
+        } // open the n4t folder
+    }
 
     @IBAction func downloadBtnPress(_ sender: NSButton) {
         self.getThread(textField)      // perform the download
@@ -46,15 +48,17 @@ class ViewController: NSViewController {
         self.subFolder = self.subfolderField.stringValue
 
         if threadURL == "" {
+            alertUserWith(title: "Empty URL", msg: "Please enter a valid 4chan thread URL!")
             return
         }
 
         self.disableUIElements()
 
-        // Read the board
+        // Extract the board name
         let regex = Regex("4chan\\.org\\/([a-z0-9]{1,})")
         guard let boardName = regex.firstMatch(in: threadURL)?.captures.first else {
             print("cannot get board name from url")
+            alertUserWith(title: "URL Error", msg: "Cannot get board name from URL. Please make sure the URL is valid and the thread hasn't gone 404 yet?")
             self.reactivateUIElements()
             return
         }
@@ -63,6 +67,7 @@ class ViewController: NSViewController {
         let config = URLSessionConfiguration.default
         let session = URLSession(configuration: config)
 
+        // Perform the base request with the url provided by the user
         let task = session.dataTask(with: url) { (data, response, error) in
             guard error == nil else {
                 print(error?.localizedDescription ?? "")
@@ -71,28 +76,27 @@ class ViewController: NSViewController {
             }
 
             guard let respData = data else {
-                print("cannot read response data")
+                self.alertUserWith(title: "Error", msg: "Cannot read response from 4chan. Are you sure the thread has not gone 404?")
                 self.reactivateUIElements()
                 return
             }
+
             do {
-                // https://boards.4chan.org/wg/thread/6872254
+                //todo: use this one for testing: https://boards.4chan.org/wg/thread/6872254
                 let json = try JSON(data: respData)
                 let media = self.buildMediaArray(json: json, boardName: boardName)
                 self.total = media.count
 
                 if self.folderExists(name: self.subFolder) {
-                    print("already exists")
+                    print("Error: Folder already exists")
                     DispatchQueue.main.async {
-                        self.label.stringValue = "Error: Folder already exists"
+                        self.alertUserWith(title: "Error", msg: "Folder already exists! Please choose another name.")
                         self.reactivateUIElements()
                     }
                     return
                 }
 
-                DispatchQueue.main.async {
-                    self.progress.maxValue = Double(media.count)
-                }
+                DispatchQueue.main.async(execute: { self.progress.maxValue = Double(media.count) })
                 self.tasks = media.count
                 for i in 0..<media.count {
                     var item = media[i].absoluteString
@@ -104,7 +108,7 @@ class ViewController: NSViewController {
                 self.reactivateUIElements()
                 self.showNotification()
             } catch {
-                debugPrint("something broke")
+                self.alertUserWith(title: "Error", msg: "Could not download pictures. An unknown error has occurred.")
                 self.reactivateUIElements()
             }
         }
@@ -119,20 +123,30 @@ class ViewController: NSViewController {
         NSUserNotificationCenter.default.deliver(notification)
     }
 
+    // notifyWith
+    func notifyWith(title: String, msg: String) -> Void {
+        let notification = NSUserNotification()
+        notification.title = title
+        notification.informativeText = msg
+        notification.soundName = NSUserNotificationDefaultSoundName
+        NSUserNotificationCenter.default.deliver(notification)
+    }
+
+    // buildMediaArray builds a new array of urls to download
     func buildMediaArray(json: JSON, boardName: String?) -> [URL] {
         var media: [URL] = []
         for i in 0..<json["posts"].count {
-            let post = json["posts"][i];
-            let file = post["tim"];
-            let ext = post["ext"]
+            let post = json["posts"][i]
+            let file = post["tim"]
+            let extn = post["ext"]
 
-            if file == JSON.null || ext == JSON.null {
+            if file == JSON.null || extn == JSON.null {
                 print("file or extension empty")
                 continue
             }
 
-            guard let mediaUrl = URL(string: ViewController.CDNBase + boardName! + "/" + file.stringValue + ext.stringValue) else {
-                print("something broke")
+            guard let mediaUrl = URL(string: ViewController.CDNBase + boardName! + "/" + file.stringValue + extn.stringValue) else {
+                alertUserWith(title: "Error", msg: "Invalid response from 4chan, are you sure the thread has not gone 404?")
                 return []
             }
             media.append(mediaUrl)
@@ -140,19 +154,21 @@ class ViewController: NSViewController {
         return media
     }
 
+    // downloadPicture launches a new sub-routine for downloading a given picture
     func downloadPicture(url: URL, dest: String, itemNum: Int, maxItems: Int) {
         // Set defaults
         let config = URLSessionConfiguration.default
         let session = URLSession(configuration: config)
         guard var dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            print("cannot read document directory")
+            notifyWith(title: "Error", msg: "cannot read document directory")
             return
         }
         if !createDestinationFolder(dir: dir) {
+            notifyWith(title: "Error", msg: "destination folder cannot be read or created")
             print("destination folder cannot be read or cannot be created")
             return
         }
-        dir = dir.appendingPathComponent("n4t")
+        dir = dir.appendingPathComponent(ViewController.BaseFolder)
 
         // Create the URL request
         let urlReq = URLRequest(url: url)
@@ -162,10 +178,11 @@ class ViewController: NSViewController {
                 // Success
                 if let statusCode = (response as? HTTPURLResponse)?.statusCode {
                     if statusCode != 200 {
-                        debugPrint("cannot download the item")
+                        print("cannot download the item")
                     }
                 }
                 do {
+                    // get the filename
                     let filename = dest as NSString
 
                     // get the filename extension
@@ -185,16 +202,10 @@ class ViewController: NSViewController {
                     try FileManager.default.copyItem(at: temp, to: destination)
 
                     // increment the progress bar
-                    DispatchQueue.main.async {
-                        self.progress.increment(by: 1)
-                    }
-
+                    DispatchQueue.main.async(execute: { self.progress.increment(by: 1) })
                     self.tasks = self.tasks - 1
-                    debugPrint(self.tasks)
-
                 } catch (let writeError) {
                     print("Error creating a file: \(writeError)")
-                    self.label.stringValue = "Error: file already exists"
                     return
                 }
             } else {
@@ -208,7 +219,7 @@ class ViewController: NSViewController {
     // directory where all the sub folders will end up
     private func createDestinationFolder(dir: URL) -> Bool {
         do {
-            var dest = dir.appendingPathComponent("n4t")
+            var dest = dir.appendingPathComponent(ViewController.BaseFolder)
             if self.subFolder != "" {
                 dest = dest.appendingPathComponent(self.subFolder)
             }
@@ -216,18 +227,42 @@ class ViewController: NSViewController {
             return true
         } catch {
             print("cannot create n4t download directory")
+            alertUserWith(title: "Error", msg: "Cannot create n4t download directory")
             return false
         }
     }
 
+    func alertUserWith(title: String, msg: String) {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = msg
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
+
+    // buildFolderPath returns the base folder path inside the Documents folder
+    func buildFolderPath() -> URL {
+        let fm = FileManager.default
+        let base = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return base.appendingPathComponent(ViewController.BaseFolder)
+    }
+
+    // folderExists checks if a specific folder within the n4t folder exists or not
     func folderExists(name: String) -> Bool {
         let fm = FileManager.default
-        var base = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        base = base.appendingPathComponent("n4t")
+        var base = buildFolderPath()
         base = base.appendingPathComponent(name)
         return fm.fileExists(atPath: base.path)
     }
 
+    // openFolder opens the Finder inside the n4t download folder
+    func openFolder() -> Bool {
+        let base = buildFolderPath()
+        return NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: base.path)
+    }
+
+    // disableUIElements turns off the elements we don't want to modify during a download is running
     func disableUIElements() {
         DispatchQueue.main.async {
             self.downloadBtn.isEnabled = false
@@ -236,6 +271,7 @@ class ViewController: NSViewController {
         }
     }
 
+    // reactivateUIElements turns on all the elements that we turned off before
     func reactivateUIElements() {
         DispatchQueue.main.async {
             self.textField.isEnabled = true
@@ -244,6 +280,5 @@ class ViewController: NSViewController {
             self.progress.doubleValue = 0.0
         }
     }
-
 }
 
