@@ -21,6 +21,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Insert code here to tear down your application
     }
 
+    @IBAction func newWindow(_ sender: Any) {
+        let task = Process()
+        task.launchPath = "/usr/bin/open"
+        task.arguments = ["-n", "-a", "n4t"]
 
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        task.standardError = pipe
+
+        task.launch()
+    }
 }
 

@@ -75,7 +75,7 @@ class ViewController: NSViewController {
                 return
             }
 
-            guard let respData = data else {
+            guard let responseData = data else {
                 self.alertUserWith(title: "Error", msg: "Cannot read response from 4chan. Are you sure the thread has not gone 404?")
                 self.reactivateUIElements()
                 return
@@ -83,7 +83,7 @@ class ViewController: NSViewController {
 
             do {
                 //todo: use this one for testing: https://boards.4chan.org/wg/thread/6872254
-                let json = try JSON(data: respData)
+                let json = try JSON(data: responseData)
                 let media = self.buildMediaArray(json: json, boardName: boardName)
                 self.total = media.count
 
@@ -98,10 +98,11 @@ class ViewController: NSViewController {
 
                 DispatchQueue.main.async(execute: { self.progress.maxValue = Double(media.count) })
                 self.tasks = media.count
-                for i in 0..<media.count {
-                    var item = media[i].absoluteString
+
+                for (k, v) in media.enumerated() {
+                    var item = v.absoluteString
                     item.replaceSubrange(item.startIndex..<item.index(item.startIndex, offsetBy: 22), with: "")
-                    self.downloadPicture(url: media[i], dest: item, itemNum: i, maxItems: media.count - 1)
+                    self.downloadPicture(url: v, dest: item, itemNum: k, maxItems: media.count - 1)
                 }
                 while self.tasks > 0 {
                 }
