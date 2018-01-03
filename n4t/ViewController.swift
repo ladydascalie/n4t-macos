@@ -9,6 +9,7 @@
 import Cocoa
 import SwiftyJSON
 import Regex
+import os.log
 
 class ViewController: NSViewController {
     static let BaseFolder = "n4t"
@@ -57,7 +58,7 @@ class ViewController: NSViewController {
         // Extract the board name
         let regex = Regex("4chan\\.org\\/([a-z0-9]{1,})")
         guard let boardName = regex.firstMatch(in: threadURL)?.captures.first else {
-            print("cannot get board name from url")
+            os_log("cannot get board name from url: %{public}@", self.threadURL)
             alertUserWith(title: "URL Error", msg: "Cannot get board name from URL. Please make sure the URL is valid and the thread hasn't gone 404 yet?")
             self.reactivateUIElements()
             return
@@ -70,7 +71,7 @@ class ViewController: NSViewController {
         // Perform the base request with the url provided by the user
         let task = session.dataTask(with: url) { (data, response, error) in
             guard error == nil else {
-                print(error?.localizedDescription ?? "")
+                os_log("%{public}@", error?.localizedDescription ?? "")
                 self.reactivateUIElements()
                 return
             }
@@ -88,7 +89,7 @@ class ViewController: NSViewController {
                 self.total = media.count
 
                 if self.folderExists(name: self.subFolder) {
-                    print("Error: Folder already exists")
+                    os_log("folder already exists %{public}@", self.subFolder)
                     DispatchQueue.main.async {
                         self.alertUserWith(title: "Error", msg: "Folder already exists! Please choose another name.")
                         self.reactivateUIElements()
@@ -142,7 +143,7 @@ class ViewController: NSViewController {
             let extn = post["ext"]
 
             if file == JSON.null || extn == JSON.null {
-                print("file or extension empty")
+                os_log("file or extension empty")
                 continue
             }
 
@@ -166,7 +167,8 @@ class ViewController: NSViewController {
         }
         if !createDestinationFolder(dir: dir) {
             notifyWith(title: "Error", msg: "destination folder cannot be read or created")
-            print("destination folder cannot be read or cannot be created")
+            os_log("destination folder cannot be read or cannot be created")
+
             return
         }
         dir = dir.appendingPathComponent(ViewController.BaseFolder)
@@ -179,7 +181,7 @@ class ViewController: NSViewController {
                 // Success
                 if let statusCode = (response as? HTTPURLResponse)?.statusCode {
                     if statusCode != 200 {
-                        print("cannot download the item")
+                        os_log("cannot download the item")
                     }
                 }
                 do {
@@ -206,11 +208,11 @@ class ViewController: NSViewController {
                     DispatchQueue.main.async(execute: { self.progress.increment(by: 1) })
                     self.tasks = self.tasks - 1
                 } catch (let writeError) {
-                    print("Error creating a file: \(writeError)")
+                    os_log("Error creating a file: %{public}@", writeError.localizedDescription)
                     return
                 }
             } else {
-                print("Error took place while downloading a file. Error description: %@", error?.localizedDescription ?? "stuff is borked");
+                os_log("Error took place while downloading a file. Error description: %{public}@", error?.localizedDescription ?? "stuff is borked");
             }
         }
         task.resume()
@@ -227,7 +229,7 @@ class ViewController: NSViewController {
             try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true, attributes: nil)
             return true
         } catch {
-            print("cannot create n4t download directory")
+            os_log("cannot create n4t download directory")
             alertUserWith(title: "Error", msg: "Cannot create n4t download directory")
             return false
         }
