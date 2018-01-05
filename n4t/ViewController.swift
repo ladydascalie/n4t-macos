@@ -137,6 +137,9 @@ class ViewController: NSViewController {
     // buildMediaArray builds a new array of urls to download
     func buildMediaArray(json: JSON, boardName: String?) -> [URL] {
         var media: [URL] = []
+        if self.subFolder == "" {
+            self.subFolder = json["posts"][0]["semantic_url"].stringValue
+        }
         for i in 0..<json["posts"].count {
             let post = json["posts"][i]
             let file = post["tim"]
