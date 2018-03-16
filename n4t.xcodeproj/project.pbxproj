@@ -15,7 +15,6 @@
 		80B496C81FE9E75900C39D18 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 80B496C61FE9E75900C39D18 /* Main.storyboard */; };
 		80B496D41FE9E75900C39D18 /* n4tTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B496D31FE9E75900C39D18 /* n4tTests.swift */; };
 		80B496DF1FE9E75A00C39D18 /* n4tUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B496DE1FE9E75A00C39D18 /* n4tUITests.swift */; };
-		80D5744E1FF4115500D82C84 /* n4t-logo.afdesign in Resources */ = {isa = PBXBuildFile; fileRef = 80D5744D1FF4115500D82C84 /* n4t-logo.afdesign */; };
 		B1645F5DE96951A07E955BBF /* Pods_n4tUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D937ED6BA65863EFC4BBC484 /* Pods_n4tUITests.framework */; };
 /* End PBXBuildFile section */
 
@@ -56,7 +55,6 @@
 		80B496DA1FE9E75A00C39D18 /* n4tUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = n4tUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		80B496DE1FE9E75A00C39D18 /* n4tUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = n4tUITests.swift; sourceTree = "<group>"; };
 		80B496E01FE9E75A00C39D18 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		80D5744D1FF4115500D82C84 /* n4t-logo.afdesign */ = {isa = PBXFileReference; lastKnownFileType = file; name = "n4t-logo.afdesign"; path = "../../../../Desktop/logoooo/n4t-logo.afdesign"; sourceTree = "<group>"; };
 		9D0AF9B196C5BD7CCC62DFD2 /* Pods-n4tTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-n4tTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-n4tTests/Pods-n4tTests.debug.xcconfig"; sourceTree = "<group>"; };
 		D937ED6BA65863EFC4BBC484 /* Pods_n4tUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_n4tUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB42F12CE492D8300E888506 /* Pods-n4tTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-n4tTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-n4tTests/Pods-n4tTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -118,7 +116,6 @@
 				80B496C01FE9E75900C39D18 /* AppDelegate.swift */,
 				80B496C21FE9E75900C39D18 /* ViewController.swift */,
 				80B496C41FE9E75900C39D18 /* Assets.xcassets */,
-				80D5744D1FF4115500D82C84 /* n4t-logo.afdesign */,
 				80B496C61FE9E75900C39D18 /* Main.storyboard */,
 				80B496C91FE9E75900C39D18 /* Info.plist */,
 				80B496CA1FE9E75900C39D18 /* n4t.entitlements */,
@@ -288,7 +285,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				80D5744E1FF4115500D82C84 /* n4t-logo.afdesign in Resources */,
 				80B496C51FE9E75900C39D18 /* Assets.xcassets in Resources */,
 				80B496C81FE9E75900C39D18 /* Main.storyboard in Resources */,
 			);
