@@ -52,7 +52,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		41E75A932083F90D00C7972C /* newN4t.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = newN4t.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		41E75A932083F90D00C7972C /* n4t.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = n4t.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		41E75A962083F90D00C7972C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		41E75A9F2083F90E00C7972C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		41E75AA02083F90E00C7972C /* newN4t.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = newN4t.entitlements; sourceTree = "<group>"; };
@@ -111,7 +111,7 @@
 		41E75A942083F90D00C7972C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				41E75A932083F90D00C7972C /* newN4t.app */,
+				41E75A932083F90D00C7972C /* n4t.app */,
 				41E75AA52083F90F00C7972C /* newN4tTests.xctest */,
 				41E75AB02083F90F00C7972C /* newN4tUITests.xctest */,
 			);
@@ -167,7 +167,7 @@
 			);
 			name = newN4t;
 			productName = newN4t;
-			productReference = 41E75A932083F90D00C7972C /* newN4t.app */;
+			productReference = 41E75A932083F90D00C7972C /* n4t.app */;
 			productType = "com.apple.product-type.application";
 		};
 		41E75AA42083F90F00C7972C /* newN4tTests */ = {
@@ -445,8 +445,8 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bc.newN4t;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.bc.n4t;
+				PRODUCT_NAME = n4t;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -466,8 +466,8 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bc.newN4t;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.bc.n4t;
+				PRODUCT_NAME = n4t;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
