@@ -1,6 +1,0 @@
-framework module Pods_n4tTests {
-  umbrella header "Pods-n4tTests-umbrella.h"
-
-  export *
-  module * { export * }
-}

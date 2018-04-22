@@ -1,6 +1,0 @@
-framework module Pods_n4t {
-  umbrella header "Pods-n4t-umbrella.h"
-
-  export *
-  module * { export * }
-}

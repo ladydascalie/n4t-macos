@@ -1,0 +1,9 @@
+{
+  "commitish" : "1.1.0",
+  "Mac" : [
+    {
+      "name" : "Regex",
+      "hash" : "ec591660d048765651de9da9135e9b2fafc236226dc411eff7ca831d7af977d0"
+    }
+  ]
+}
